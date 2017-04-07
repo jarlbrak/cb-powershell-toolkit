@@ -20,6 +20,8 @@
 class CBEPFile{
     [system.object]$fileCatalog
     [system.object]$fileInstance
+    [system.object]$fileRule
+    [system.object]$fileUpload
 
     # Parameters required:  $fileCatalogId - this is the ID of a file in the catalog
     #                       $session - this is a session object from the CBEPSession class
@@ -58,6 +60,42 @@ class CBEPFile{
             }
         }
         $this.fileInstance += $tempFile
+    }
+    # Parameters required:  $session - this is a session object from the CBEPSession class
+    # This method will use an open session to ask for a get query on the api
+    [void] GetFileUpload ([system.object]$session){
+        $urlQueryPart = "/fileUpload?q=id:*&q=uploadStatus:3"
+        $tempFile = $session.get($urlQueryPart)
+        If ($this.fileUpload){
+            $i = 0
+            While ($i -lt $this.fileUpload.length){
+                If ($this.fileUpload[$i].id -eq $tempFile.id){
+                    $this.fileUpload[$i] = $tempFile
+                    return
+                }
+                $i++
+            }
+        }
+        $this.fileUpload += $tempFile
+    }
+
+    # Parameters required:  $name - Name of this rule
+    #                       $session - this is a session object from the CBEPSession class
+    # This method will use an open session to ask for a get query on the api
+    [void] GetFileRule ([string]$name, [system.object]$session){
+        $urlQueryPart = "/fileRule?q=name:" + $name
+        $tempFile = $session.get($urlQueryPart)
+        If ($this.fileRule){
+            $i = 0
+            While ($i -lt $this.fileRule.length){
+                If ($this.fileRule[$i].id -eq $tempFile.id){
+                    $this.fileRule[$i] = $tempFile
+                    return
+                }
+                $i++
+            }
+        }
+        $this.fileRule += $tempFile
     }
 
     # Parameters required:  $fileCatalogId - this is the ID of a file in the catalog
@@ -160,21 +198,21 @@ class CBEPFile{
     #                      $platformFlags	-	Set of platform flags where this file rule will be valid. combination of: 1 = Windows, 2 = Mac, 4 = Linux
     # This method will create a new rule for a file based on the information given
     [void] CreateRule ([string]$fileCatalogId, [string]$name, [string]$description, [string]$fileState, [string]$reportOnly, [string]$reputationApprovalsEnabled, [string]$forceInstaller, [string]$forceNotInstaller, [string]$policyIds, [string]$hash, [string]$platformFlags, [system.object]$session){
-        [system.object]$fileRule = @{}
-        $fileRule.fileCatalogId = $fileCatalogId
-        $fileRule.name = $name
-        $fileRule.description = $description
-        $fileRule.fileState = $fileState
-        $fileRule.reportOnly = $reportOnly
-        $fileRule.reputationApprovalsEnabled = $reputationApprovalsEnabled
-        $fileRule.forceInstaller = $forceInstaller
-        $fileRule.forceNotInstaller = $forceNotInstaller
-        $fileRule.policyIds = $policyIds
-        $fileRule.hash = $hash
-        $fileRule.platformFlags = $platformFlags
+        [system.object]$fileRuleTemp = @{}
+        $fileRuleTemp.fileCatalogId = $fileCatalogId
+        $fileRuleTemp.name = $name
+        $fileRuleTemp.description = $description
+        $fileRuleTemp.fileState = $fileState
+        $fileRuleTemp.reportOnly = $reportOnly
+        $fileRuleTemp.reputationApprovalsEnabled = $reputationApprovalsEnabled
+        $fileRuleTemp.forceInstaller = $forceInstaller
+        $fileRuleTemp.forceNotInstaller = $forceNotInstaller
+        $fileRuleTemp.policyIds = $policyIds
+        $fileRuleTemp.hash = $hash
+        $fileRuleTemp.platformFlags = $platformFlags
 
         $urlQueryPart = "/fileRule"
-        $jsonObject = ConvertTo-Json -InputObject $fileRule
+        $jsonObject = ConvertTo-Json -InputObject $fileRuleTemp
         $session.post($urlQueryPart, $jsonObject)
     }
 
