@@ -43,11 +43,7 @@ Param(
     )]
     [string[]]$vtkey
 )
-$secureValue = @{
-    url=$null
-    key=$null
-    vtkey=$null
-}
+$secureValue = @{}
 
 $secureValue.url = $url | ConvertTo-SecureString -AsPlainText -Force | ConvertFrom-SecureString
 $secureValue.key = $key | ConvertTo-SecureString -AsPlainText -Force | ConvertFrom-SecureString
