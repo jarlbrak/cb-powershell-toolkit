@@ -43,7 +43,7 @@ Param(
 $Session = [CBEPSession]::new()
 $sessionResult = $Session.Initialize()
 If ($sessionResult.HttpStatus -ne '200'){
-    return $sessionResult
+    Write-Error -Message "The session could not be established!" -TargetObject $sessionResult
 }
 # End default session block
 
@@ -51,6 +51,12 @@ $Computer = [CBEPComputer]::new()
 
 $Computer.Get($computerName, $null, $Session)
 
+If (!$Computer.computer){
+    Write-Error -Message "No machines found to delete!"
+}
+
 ForEach ($machine in $Computer.computer){
     $Computer.Delete($machine.id, $Session)
 }
+
+Write-Output -InputObject $Computer.computer | Where-Object {$_.deleted -eq "True"}

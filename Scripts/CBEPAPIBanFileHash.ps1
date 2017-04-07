@@ -50,9 +50,13 @@ If (!$name){
 $Session = [CBEPSession]::new()
 $sessionResult = $Session.Initialize()
 If ($sessionResult.HttpStatus -ne '200'){
-    return $sessionResult
+    Write-Error -Message "The session could not be established!" -TargetObject $sessionResult
 }
 # End default session block
 
 $File = [CBEPFile]::new()
 $File.CreateRule('0', $name, $null, '3', $null, $null, $null, $null, $null, $hash, '7')
+
+$File.GetFileRule($name, $session)
+
+Write-Output $File.fileRule

@@ -45,6 +45,6 @@ Param(
 $Session = [CBEPSession]::new()
 $sessionResult = $Session.Initialize()
 If ($sessionResult.HttpStatus -ne '200'){
-    return $sessionResult
+    Write-Error -Message "The session could not be established!" -TargetObject $sessionResult
 }
 # End default session block
