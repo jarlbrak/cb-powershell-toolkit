@@ -1,6 +1,8 @@
 # CB Protection API Toolkit for PowerShell
 This toolkit was written specifically for PowerShell 5.1. As such, it uses code that is NOT compatible with anything below 5.0.
 
+If you are trying to use this with Task Scheduler on Windows Server 2012R2, you MUST install this KB patch so that the API key can be stored and read securely in the running user's temp folder: KB3133689
+
 ## How to use
 Import these modules with the new import method introduced in PowerShell 5.0
 ```
