@@ -36,17 +36,22 @@ class CBEPTemplate{
             return
         }
         $tempTemplate = $session.get($urlQueryPart)
-        If ($this.template){
-            $i = 0
-            While ($i -lt $this.template.length){
-                If ($this.template[$i].id -eq $tempTemplate.id){
-                    $this.template[$i] = $tempTemplate
-                    Return
+        If ($tempTemplate.id){
+            If ($this.template){
+                $i = 0
+                While ($i -lt $this.template.length){
+                    If ($this.template[$i].id -eq $tempTemplate.id){
+                        $this.template[$i] = $tempTemplate
+                        Return
+                    }
+                    $i++
                 }
-                $i++
             }
+            $this.template += $tempTemplate
         }
-        $this.template += $tempTemplate
+        Else{
+            Write-Error -Message ($tempTemplate.Query + " : " + $tempTemplate.Message + " : " + $tempTemplate.HttpStatus + " : " + $tempTemplate.HttpDescription)
+        }
     }
 
     # Parameters required:  $computerID - this is the ID of a computer
