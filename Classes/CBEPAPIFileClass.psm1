@@ -222,7 +222,7 @@ class CBEPFile{
     #                      $priority - Upload priority in range [-2, 2], where 2 is highest priority. Default priority is 0
     #                      $uploadStatus - Status of upload. Status of upload in progress can be changed to 5 (Cancelled). Any upload can be changed to 6 (Deleted)
     # This method will pull a file from a computer to the CBEP server. It also has the capability of cancelling and deleting the upload based on modifying upload status
-    [system.object] Upload ([system.int32]$computerId, [system.int32]$fileCatalogId, [system.int32]$priority, [system.int32]$uploadStatus, [system.object]$session){
+    [system.object] Upload ([string]$computerId, [string]$fileCatalogId, [string]$priority, [string]$uploadStatus, [system.object]$session){
         [system.object]$fileUploadRequest = @{}
         $fileUploadRequest.computerId = $computerId
         $fileUploadRequest.fileCatalogId = $fileCatalogId
@@ -235,10 +235,15 @@ class CBEPFile{
     }
 
     # Parameters required: $uploadId - id of a requested fileUpload
+    #                      $outFile - this is a valididated file name with a full path
     #                      $session - this is a session object from the CBEPSession class
-    # This method will download a file from the CBEP server and return it
-    [System.IO.FileInfo] Download ([system.int32]$uploadId, [system.object]$session){
+    # This method will download a file from the CBEP server based on the validated outfile specified
+    [system.object] Download ([string]$uploadId, [string]$outFile, [system.object]$session){
+        $this.GetFileUpload($session)
+        If (($this.fileUpload | Where-Object {$_.id -eq $uploadId}).uploadedFileSize -gt '32000000'){
+            Write-Error -Message "File is too large to be analyzed. Cancelling download." -ErrorId $uploadId
+        }
         $urlQueryPart = "/fileUpload/" + $uploadId + "?downloadFile=True"
-        return $session.getFile($urlQueryPart)
+        return $session.getFile($urlQueryPart, $outFile)
     }
 }
