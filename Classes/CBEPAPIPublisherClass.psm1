@@ -35,16 +35,21 @@ class CBEPPublisher{
             return
         }
         $tempPublisher = $session.get($urlQueryPart)
-        If ($this.publisher){
-            $i = 0
-            While ($i -lt $this.publisher.length){
-                If ($this.publisher[$i].id -eq $tempPublisher.id){
-                    $this.publisher[$i] = $tempPublisher
+        If ($tempPublisher.id){
+            If ($this.publisher){
+                $i = 0
+                While ($i -lt $this.publisher.length){
+                    If ($this.publisher[$i].id -eq $tempPublisher.id){
+                        $this.publisher[$i] = $tempPublisher
+                    }
+                    $i++
                 }
-                $i++
             }
+            $this.publisher += $tempPublisher
         }
-        $this.publisher += $tempPublisher
+        Else{
+            Write-Error -Message ($tempPublisher.Query + " : " + $tempPublisher.Message + " : " + $tempPublisher.HttpStatus + " : " + $tempPublisher.HttpDescription)
+        }
     }
 
     # Parameters required:  $publisherId - Unique id of this publisher
