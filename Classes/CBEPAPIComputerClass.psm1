@@ -35,17 +35,22 @@ class CBEPComputer{
             return
         }
         $tempComputer = $session.get($urlQueryPart)
-        If ($this.computer){
-            $i = 0
-            While ($i -lt $this.computer.length){
-                If ($this.computer[$i].id -eq $tempComputer.id){
-                    $this.computer[$i] = $tempComputer
-                    Return
+        If ($tempComputer.id){
+            If ($this.computer){
+                $i = 0
+                While ($i -lt $this.computer.length){
+                    If ($this.computer[$i].id -eq $tempComputer.id){
+                        $this.computer[$i] = $tempComputer
+                        Return
+                    }
+                    $i++
                 }
-                $i++
             }
+            $this.computer += $tempComputer
         }
-        $this.computer += $tempComputer
+        Else{
+            Write-Error -Message ($tempComputer.Query + " : " + $tempComputer.Message + " : " + $tempComputer.HttpStatus + " : " + $tempComputer.HttpDescription)
+        }
     }
 
     # Parameters required:  $computerID - this is the ID of a computer
