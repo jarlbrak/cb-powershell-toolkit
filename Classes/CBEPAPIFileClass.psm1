@@ -29,17 +29,22 @@ class CBEPFile{
     [void] GetCatalog ([string]$fileCatalogId, [system.object]$session){
         $urlQueryPart = "/fileCatalog?q=id:" + $fileCatalogId
         $tempFile = $session.get($urlQueryPart)
-        If ($this.fileCatalog){
-            $i = 0
-            While ($i -lt $this.fileCatalog.length){
-                If ($this.fileCatalog[$i].id -eq $tempFile.id){
-                    $this.fileCatalog[$i] = $tempFile
-                    return
+        If ($tempFile.id){
+            If ($this.fileCatalog){
+                $i = 0
+                While ($i -lt $this.fileCatalog.length){
+                    If ($this.fileCatalog[$i].id -eq $tempFile.id){
+                        $this.fileCatalog[$i] = $tempFile
+                        return
+                    }
+                    $i++
                 }
-                $i++
             }
+            $this.fileCatalog += $tempFile
         }
-        $this.fileCatalog += $tempFile
+        Else{
+            Write-Error -Message ($tempFile.Query + " : " + $tempFile.Message + " : " + $tempFile.HttpStatus + " : " + $tempFile.HttpDescription)
+        }
     }
 
     # Parameters required:  $fileCatalogId - this is the ID of a file in the catalog
@@ -49,34 +54,44 @@ class CBEPFile{
     [void] GetInstance ([string]$fileCatalogId, [string]$computerId, [system.object]$session){
         $urlQueryPart = "/fileInstance?q=fileCatalogId:" + $fileCatalogId + "&q=computerId:" + $computerId
         $tempFile = $session.get($urlQueryPart)
-        If ($this.fileInstance){
-            $i = 0
-            While ($i -lt $this.fileInstance.length){
-                If ($this.fileInstance[$i].id -eq $tempFile.id){
-                    $this.fileInstance[$i] = $tempFile
-                    return
+        If ($tempFile.id){
+            If ($this.fileInstance){
+                $i = 0
+                While ($i -lt $this.fileInstance.length){
+                    If ($this.fileInstance[$i].id -eq $tempFile.id){
+                        $this.fileInstance[$i] = $tempFile
+                        return
+                    }
+                    $i++
                 }
-                $i++
             }
+            $this.fileInstance += $tempFile
         }
-        $this.fileInstance += $tempFile
+        Else{
+            Write-Error -Message ($tempFile.Query + " : " + $tempFile.Message + " : " + $tempFile.HttpStatus + " : " + $tempFile.HttpDescription)
+        }
     }
     # Parameters required:  $session - this is a session object from the CBEPSession class
     # This method will use an open session to ask for a get query on the api
     [void] GetFileUpload ([system.object]$session){
         $urlQueryPart = "/fileUpload?q=id:*&q=uploadStatus:3"
         $tempFile = $session.get($urlQueryPart)
-        If ($this.fileUpload){
-            $i = 0
-            While ($i -lt $this.fileUpload.length){
-                If ($this.fileUpload[$i].id -eq $tempFile.id){
-                    $this.fileUpload[$i] = $tempFile
-                    return
+        If ($tempFile.id){
+            If ($this.fileUpload){
+                $i = 0
+                While ($i -lt $this.fileUpload.length){
+                    If ($this.fileUpload[$i].id -eq $tempFile.id){
+                        $this.fileUpload[$i] = $tempFile
+                        return
+                    }
+                    $i++
                 }
-                $i++
             }
+            $this.fileUpload += $tempFile
         }
-        $this.fileUpload += $tempFile
+        Else{
+            Write-Error -Message ($tempFile.Query + " : " + $tempFile.Message + " : " + $tempFile.HttpStatus + " : " + $tempFile.HttpDescription)
+        }
     }
 
     # Parameters required:  $name - Name of this rule
@@ -85,17 +100,22 @@ class CBEPFile{
     [void] GetFileRule ([string]$name, [system.object]$session){
         $urlQueryPart = "/fileRule?q=name:" + $name
         $tempFile = $session.get($urlQueryPart)
-        If ($this.fileRule){
-            $i = 0
-            While ($i -lt $this.fileRule.length){
-                If ($this.fileRule[$i].id -eq $tempFile.id){
-                    $this.fileRule[$i] = $tempFile
-                    return
+        If ($tempFile.id){
+            If ($this.fileRule){
+                $i = 0
+                While ($i -lt $this.fileRule.length){
+                    If ($this.fileRule[$i].id -eq $tempFile.id){
+                        $this.fileRule[$i] = $tempFile
+                        return
+                    }
+                    $i++
                 }
-                $i++
             }
+            $this.fileRule += $tempFile
         }
-        $this.fileRule += $tempFile
+        Else{
+            Write-Error -Message ($tempFile.Query + " : " + $tempFile.Message + " : " + $tempFile.HttpStatus + " : " + $tempFile.HttpDescription)
+        }
     }
 
     # Parameters required:  $fileCatalogId - this is the ID of a file in the catalog
