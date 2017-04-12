@@ -24,16 +24,21 @@ class CBEPPolicy{
     [void] Get ([string]$policyId, [system.object]$session){
         $urlQueryPart = "/Policy?q=id:" + $policyId
         $tempPolicy = $session.get($urlQueryPart)
-        If ($this.policy){
-            $i = 0
-            While ($i -lt $this.policy.length){
-                If ($this.policy[$i].id -eq $tempPolicy.id){
-                    $this.policy[$i] = $tempPolicy
-                    return
+        If ($tempPolicy.id){
+            If ($this.policy){
+                $i = 0
+                While ($i -lt $this.policy.length){
+                    If ($this.policy[$i].id -eq $tempPolicy.id){
+                        $this.policy[$i] = $tempPolicy
+                        return
+                    }
+                    $i++
                 }
-                $i++
             }
+            $this.policy += $tempPolicy
         }
-        $this.policy += $tempPolicy
+        Else{
+            Write-Error -Message ($tempPolicy.Query + " : " + $tempPolicy.Message + " : " + $tempPolicy.HttpStatus + " : " + $tempPolicy.HttpDescription)
+        }
     }
 }
