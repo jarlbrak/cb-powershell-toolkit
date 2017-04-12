@@ -27,25 +27,38 @@ class CBEPRequest{
     #                       $session - this is a session object from the CBEPSession class
     # This method will use an open session to ask for a get query on the api
     [void] Get ([string]$requestID, [boolean]$unopened, [system.object]$session){
-        if ($requestID){
+        If ($requestID){
             $urlQueryPart = "/approvalRequest?q=id:" + $requestID
             $tempRequest = $session.get($urlQueryPart)
-            If ($this.approvalRequest){
-                $i = 0
-                While ($i -lt $this.approvalRequest.length){
-                    If($this.approvalRequest[$i].id -eq $tempRequest.id){
-                        $this.approvalRequest[$i] = $tempRequest
-                        return
+
+            If ($tempRequest.id){
+                If ($this.approvalRequest){
+                    $i = 0
+                    While ($i -lt $this.approvalRequest.length){
+                        If($this.approvalRequest[$i].id -eq $tempRequest.id){
+                            $this.approvalRequest[$i] = $tempRequest
+                            return
+                        }
+                        $i++
                     }
-                    $i++
                 }
+                $this.approvalRequest += $tempRequest
             }
-            $this.approvalRequest += $tempRequest
+            Else{
+                Write-Error -Message ($tempRequest.Query + " : " + $tempRequest.Message + " : " + $tempRequest.HttpStatus + " : " + $tempRequest.HttpDescription)
+            }
         }
-        elseif ($unopened){
+        ElseIf ($unopened){
             $this.approvalRequest = $null
             $urlQueryPart = "/approvalRequest?q=status:1"
-            $this.approvalRequest = $session.get($urlQueryPart)
+            $tempRequest = $session.get($urlQueryPart)
+            
+            If ($tempRequest.id){
+                $this.approvalRequest = $tempRequest
+            }
+            Else{
+                Write-Error -Message ($tempRequest.Query + " : " + $tempRequest.Message + " : " + $tempRequest.HttpStatus + " : " + $tempRequest.HttpDescription)
+            }
         }
     }
 
