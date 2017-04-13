@@ -14,3 +14,84 @@
     IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
     ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #>
+
+class CBEPEvent{
+    [system.object]$event
+
+    [void] Get ([string]$maxAge, [string]$subtypeId, [string]$computerId, [string]$policyId, [string]$fileCatalogId, [system.object]$session){
+        $this.event = $null
+
+        If (!$maxAge){
+            return
+        }
+        Else{
+            $timeStamp = ((([DateTime]::UtcNow).AddMinutes(-$maxAge)).ToString('yyyy-MM-ddTH:mm:ssZ')) 
+        }
+        # Get the amount of events
+        $urlQueryPart = "/event?q=timeStamp>" + $timeStamp + "&q=limit:-1"
+        $tempEvent = $session.get($urlQueryPart)
+
+        If ($tempEvent.count){
+            $count = $tempEvent.count
+            $j = 0
+
+            # Get the first 1000 events
+            $urlQueryPart = "/event?q=timeStamp>" + $timeStamp
+            If ($subtypeId){
+                $urlQueryPart += ("&q=subType:" + $subtypeId)
+            }
+            If ($computerId){
+                $urlQueryPart += ("&q=computerId:" + $computerId)
+            }
+            If ($policyId){
+                $urlQueryPart += "&q=policyId:" + $policyId
+            }
+            If ($fileCatalogId){
+                $urlQueryPart += "&q=fileCatalogId:" + $fileCatalogId
+            }
+            $urlQueryPart += "&offset=" + $j
+
+            $tempEvent = $session.get($urlQueryPart)
+
+            If ($tempEvent.id){
+                $this.event = $tempEvent
+            }
+            ElseIf ($tempEvent.Message){
+                Write-Error -Message ($tempEvent.Query + " : " + $tempEvent.Message + " : " + $tempEvent.HttpStatus + " : " + $tempEvent.HttpDescription)
+            }
+
+            # Get the rest of the events
+            If ($count -gt 1000){
+                Do{
+                    $j += 1000
+
+                    $urlQueryPart = "/event?q=timeStamp>" + $timeStamp
+                    If ($subtypeId){
+                        $urlQueryPart += ("&q=subType:" + $subtypeId)
+                    }
+                    If ($computerId){
+                        $urlQueryPart += ("&q=computerId:" + $computerId)
+                    }
+                    If ($policyId){
+                        $urlQueryPart += "&q=policyId:" + $policyId
+                    }
+                    If ($fileCatalogId){
+                        $urlQueryPart += "&q=fileCatalogId:" + $fileCatalogId
+                    }
+                    $urlQueryPart += "&offset=" + $j
+
+                    $tempEvent = $session.get($urlQueryPart)
+                    If ($tempEvent.id){
+                        $this.event += $tempEvent
+                    }
+                    ElseIf ($tempEvent.Message){
+                        Write-Error -Message ($tempEvent.Query + " : " + $tempEvent.Message + " : " + $tempEvent.HttpStatus + " : " + $tempEvent.HttpDescription)
+                    }
+                } While ($j -lt $count)
+            }
+        }
+        ElseIf ($tempEvent.Message){
+            Write-Error -Message ($tempEvent.Query + " : " + $tempEvent.Message + " : " + $tempEvent.HttpStatus + " : " + $tempEvent.HttpDescription)
+        }
+    }
+}
