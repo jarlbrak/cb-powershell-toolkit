@@ -25,32 +25,54 @@ class CBEPComputer{
     # Returns: system.object - computers returned from the API
     # This method will use an open session to ask for a GET query on the api
     [void] Get ([string]$computerName, [string]$computerId, [system.object]$session){
+        $this.computer = $null
+
         If ($computerName){
-            $urlQueryPart = "/Computer?q=name:" + $computerName + "&q=deleted:false&q=template:false"
+            $tempQuery = "/Computer?q=name:" + $computerName + "&q=deleted:false&q=template:false"
         }
         ElseIf ($computerId){
-            $urlQueryPart = "/Computer?q=id:" + $computerId + "&q=deleted:false&q=template:false"
+            $tempQuery = "/Computer?q=id:" + $computerId + "&q=deleted:false&q=template:false"
         }
         Else{
             return
         }
-        $tempComputer = $session.get($urlQueryPart)
-        If ($tempComputer.id){
-            If ($this.computer){
-                $i = 0
-                While ($i -lt $this.computer.length){
-                    If ($this.computer[$i].id -eq $tempComputer.id){
-                        $this.computer[$i] = $tempComputer
-                        Return
-                    }
-                    $i++
-                }
+
+        $urlQueryPartCount = $tempQuery + "&limit=-1"
+        $tempComputer = $session.get($urlQueryPartCount)
+
+        If ($tempComputer.count){
+            $count = $tempComputer.count
+            $j = 0
+
+            # Get the first 1000 computers
+            $urlQueryPart = $tempQuery + "&offset=" + $j
+            $tempComputer = $session.get($urlQueryPart)
+
+            If ($tempComputer.id){
+                $this.computer = $tempComputer
             }
-            $this.computer += $tempComputer
+            ElseIf ($tempComputer.Message){
+                Write-Error -Message ($tempComputer.Query + " : " + $tempComputer.Message + " : " + $tempComputer.HttpStatus + " : " + $tempComputer.HttpDescription)
+            }
+
+            # Get the rest of the computers
+            If ($count -gt 1000){
+                Do{
+                    $j += 1000
+                    $urlQueryPart = $tempQuery + "&offset=" + $j
+                    $tempComputer = $session.get($urlQueryPart)
+                    If ($tempComputer.id){
+                        $this.computer += $tempComputer
+                    }
+                    ElseIf ($tempComputer.Message){
+                        Write-Error -Message ($tempComputer.Query + " : " + $tempComputer.Message + " : " + $tempComputer.HttpStatus + " : " + $tempComputer.HttpDescription)
+                    }
+                } While ($j -lt $count)
+            }
         }
-        Else{
+        ElseIf ($tempComputer.Message){
             Write-Error -Message ($tempComputer.Query + " : " + $tempComputer.Message + " : " + $tempComputer.HttpStatus + " : " + $tempComputer.HttpDescription)
-        }
+        } 
     }
 
     # Parameters required:  $computerID - this is the ID of a computer
