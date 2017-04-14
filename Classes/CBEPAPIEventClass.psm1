@@ -27,30 +27,31 @@ class CBEPEvent{
         Else{
             $timeStamp = ((([DateTime]::UtcNow).AddMinutes(-$maxAge)).ToString('yyyy-MM-ddTH:mm:ssZ')) 
         }
+
+        $tempQuery = "/event?q=timeStamp>" + $timeStamp
+        If ($subtypeId){
+            $tempQuery += ("&q=subType:" + $subtypeId)
+        }
+        If ($computerId){
+            $tempQuery += ("&q=computerId:" + $computerId)
+        }
+        If ($policyId){
+            $tempQuery += "&q=policyId:" + $policyId
+        }
+        If ($fileCatalogId){
+            $tempQuery += "&q=fileCatalogId:" + $fileCatalogId
+        }
+
         # Get the amount of events
-        $urlQueryPart = "/event?q=timeStamp>" + $timeStamp + "&q=limit:-1"
-        $tempEvent = $session.get($urlQueryPart)
+        $urlQueryPartCount = "/event?q=timeStamp>" + $timeStamp + "&limit=-1"
+        $tempEvent = $session.get($urlQueryPartCount)
 
         If ($tempEvent.count){
             $count = $tempEvent.count
             $j = 0
 
             # Get the first 1000 events
-            $urlQueryPart = "/event?q=timeStamp>" + $timeStamp
-            If ($subtypeId){
-                $urlQueryPart += ("&q=subType:" + $subtypeId)
-            }
-            If ($computerId){
-                $urlQueryPart += ("&q=computerId:" + $computerId)
-            }
-            If ($policyId){
-                $urlQueryPart += "&q=policyId:" + $policyId
-            }
-            If ($fileCatalogId){
-                $urlQueryPart += "&q=fileCatalogId:" + $fileCatalogId
-            }
-            $urlQueryPart += "&offset=" + $j
-
+            $urlQueryPart = $tempQuery + "&offset=" + $j
             $tempEvent = $session.get($urlQueryPart)
 
             If ($tempEvent.id){
@@ -64,22 +65,7 @@ class CBEPEvent{
             If ($count -gt 1000){
                 Do{
                     $j += 1000
-
-                    $urlQueryPart = "/event?q=timeStamp>" + $timeStamp
-                    If ($subtypeId){
-                        $urlQueryPart += ("&q=subType:" + $subtypeId)
-                    }
-                    If ($computerId){
-                        $urlQueryPart += ("&q=computerId:" + $computerId)
-                    }
-                    If ($policyId){
-                        $urlQueryPart += "&q=policyId:" + $policyId
-                    }
-                    If ($fileCatalogId){
-                        $urlQueryPart += "&q=fileCatalogId:" + $fileCatalogId
-                    }
-                    $urlQueryPart += "&offset=" + $j
-
+                    $urlQueryPart = $tempQuery + "&offset=" + $j
                     $tempEvent = $session.get($urlQueryPart)
                     If ($tempEvent.id){
                         $this.event += $tempEvent
